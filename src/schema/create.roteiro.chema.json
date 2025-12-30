@@ -1,0 +1,49 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "CreateRoteiroSchema",
+    "type": "object",
+    "properties": {
+        "cidade_id": {
+            "type": "integer",
+            "description": "ID da cidade onde o roteiro acontece."
+        },
+        "titulo": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "Título do roteiro."
+        },
+        "descricao": {
+            "type": "string",
+            "description": "Descrição detalhada do roteiro."
+        },
+        "duracao_dias": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Duração do roteiro em dias."
+        },
+        "data_inicio": {
+            "type": "string",
+            "format": "date",
+            "description": "Data de início do roteiro (YYYY-MM-DD)."
+        },
+        "numero_pessoas": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "orcamento_total": {
+            "type": "number"
+        },
+        "moeda": {
+            "type": "string",
+            "maxLength": 10
+        },
+        "e_publico": {
+            "type": "boolean"
+        },
+        "url_imagem_capa": {
+            "type": "string",
+            "format": "uri"
+        }
+    },
+    "required": ["cidade_id", "titulo","data_inicio", "duracao_dias"]
+}

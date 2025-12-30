@@ -1,0 +1,101 @@
+[
+  {
+    "name": "Rio de Janeiro",
+    "touristSpots": [
+      "Cristo Redentor",
+      "Pão de Açúcar",
+      "Praia de Copacabana",
+      "Escadaria Selarón",
+      "Jardim Botânico do Rio de Janeiro"
+    ]
+  },
+  {
+    "name": "Salvador",
+    "touristSpots": [
+      "Elevador Lacerda",
+      "Farol da Barra",
+      "Mercado Modelo",
+      "Igreja de Nosso Senhor do Bonfim"
+    ]
+  },
+  {
+    "name": "Foz do Iguaçu",
+    "touristSpots": [
+      "Cataratas do Iguaçu",
+      "Parque das Aves",
+      "Usina Hidrelétrica de Itaipu",
+      "Marco das Três Fronteiras",
+      "Templo Budista Chen Tien"
+    ]
+  },
+  {
+    "name": "Gramado",
+    "touristSpots": [
+      "Lago Negro",
+      "Mini Mundo",
+      "Rua Coberta",
+      "Palácio dos Festivais",
+      "Snowland"
+    ]
+  },
+  {
+    "name": "Bonito (Mato Grosso do Sul)",
+    "touristSpots": [
+      "Gruta do Lago Azul",
+      "Rio da Prata",
+      "Abismo Anhumas",
+      "Balneário Municipal",
+      "Estância Mimosa"
+    ]
+  },
+  {
+    "name": "Manaus",
+    "touristSpots": [
+      "Teatro Amazonas",
+      "Encontro das Águas",
+      "Mercado Adolpho Lisboa",
+      "Ponta Negra",
+      "MUSA - Museu da Amazônia"
+    ]
+  },
+  {
+    "name": "Maceió",
+    "touristSpots": [
+      "Praia de Pajuçara",
+      "Praia de Ponta Verde",
+      "Praia do Gunga",
+      "Foz do Rio São Francisco",
+      "Piscinas Naturais de Maragogi"
+    ]
+  },
+  {
+    "name": "Paris",
+    "touristSpots": [
+      "Torre Eiffel",
+      "Museu do Louvre",
+      "Catedral de Notre-Dame",
+      "Arco do Triunfo",
+      "Montmartre"
+    ]
+  },
+  {
+    "name": "Goiânia",
+    "touristSpots": [
+      "Parque Vaca Brava",
+      "Bosque dos Buritis",
+      "Parque Flamboyant",
+      "Centro Cultural Oscar Niemeyer",
+      "Feira Hippie"
+    ]
+  },
+  {
+    "name": "Buenos Aires",
+    "touristSpots": [
+      "Plaza de Mayo",
+      "Avenida 9 de Julio e Obelisco",
+      "Teatro Colón",
+      "Palácio Barolo",
+      "Cabildo"
+    ]
+  }
+]

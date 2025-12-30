@@ -1,0 +1,12 @@
+{
+    "editor.fontSize": 14,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    "eslint.validate": [
+        "javascript"
+    ],
+    "editor.fontFamily": "JetBrains Mono",
+    "editor.fontLigatures": true,
+    "liveServer.settings.port": 3000,
+}
