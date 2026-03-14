@@ -40,7 +40,7 @@ module.exports = {
     });
     // O CHECK constraint (seguidor_id != seguido_id) precisa ser adicionado com SQL puro
     // pois o Sequelize não o suporta de forma abstrata.
-    await queryInterface.sequelize.query('ALTER TABLE `user_seguidores` ADD CONSTRAINT `chk_seguidor_nao_segue_a_si_mesmo` CHECK (`seguidor_id` != `seguido_id`);');
+    await queryInterface.sequelize.query('ALTER TABLE "user_seguidores" ADD CONSTRAINT "chk_seguidor_nao_segue_a_si_mesmo" CHECK ("seguidor_id" != "seguido_id");');
   },
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('user_seguidores');

@@ -118,7 +118,7 @@ module.exports = {
       atualizado_em: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
     }, {
       indexes: [
@@ -131,5 +131,8 @@ module.exports = {
   },
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('cupons');
+    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_cupons_tipo_desconto";');
+    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_cupons_status";');
+    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_cupons_publico_alvo";');
   },
 };

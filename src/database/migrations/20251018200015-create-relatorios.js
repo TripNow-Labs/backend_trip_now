@@ -61,5 +61,6 @@ module.exports = {
   },
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('relatorios');
+    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_relatorios_status";');
   },
 };
