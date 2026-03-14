@@ -4,7 +4,6 @@ const { Model, Sequelize } = require('sequelize');
 class Assinatura extends Model {
   static init(sequelize) {
     super.init({
-      // Custom Primary Key 'id_assinatura' mantida
       id_assinatura: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -27,7 +26,6 @@ class Assinatura extends Model {
   }
 
   static associate(models) {
-    // Assumindo que seu modelo de usuário é 'User'
     this.hasOne(models.Users, { foreignKey: 'id_assinatura' });
   }
 }

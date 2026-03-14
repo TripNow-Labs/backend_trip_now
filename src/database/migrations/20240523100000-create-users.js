@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('users', {
@@ -24,6 +26,10 @@ module.exports = {
         type: Sequelize.STRING(255),
         allowNull: false
       },
+      id_assinatura: {
+        type: Sequelize.INTEGER,
+        allowNull: true
+      },
       tipo_usuario: {
         type: Sequelize.ENUM('usuario', 'admin'),
         allowNull: false,
@@ -33,7 +39,7 @@ module.exports = {
         type: Sequelize.STRING(50)
       },
       data_nascimento: {
-        type: Sequelize.DATE
+        type: Sequelize.DATEONLY
       },
       cidade: {
         type: Sequelize.STRING(100)
@@ -57,15 +63,6 @@ module.exports = {
       ultimo_login_em: {
         type: Sequelize.DATE
       },
-      id_assinatura: {
-        type: Sequelize.INTEGER,
-        defaultValue: 1, // Supondo que 1 é o ID da assinatura padrão/gratuita
-        references: {
-          model: 'assinaturas',
-          key: 'id_assinatura'
-        },
-        onDelete: 'SET NULL'
-      },
       criado_em: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
@@ -73,13 +70,14 @@ module.exports = {
       },
       atualizado_em: {
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
         allowNull: false
       }
-    })
+    });
   },
 
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('users');
-  },
+    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_users_tipo_usuario";');
+  }
 };

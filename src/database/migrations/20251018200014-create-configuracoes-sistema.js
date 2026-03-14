@@ -41,7 +41,7 @@ module.exports = {
       atualizado_em: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       criado_em: {
         type: Sequelize.DATE,
@@ -56,5 +56,6 @@ module.exports = {
   },
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('configuracoes_sistema');
+    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_configuracoes_sistema_tipo_dado";');
   },
 };
