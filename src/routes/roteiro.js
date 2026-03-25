@@ -11,12 +11,17 @@ const roteiroRoutes = new Router();
 // Aplicando o middleware em todas as rotas deste arquivo (todas são protegidas)
 roteiroRoutes.use(AuthenticateMiddleware);
 
+// --- 1. ROTAS ESTÁTICAS (NOMES FIXOS) - DEVEM VIR PRIMEIRO ---
+roteiroRoutes.get('/curated-cities', RoteiroController.getCuratedCities);
+roteiroRoutes.get('/search', RoteiroController.searchCity);
+roteiroRoutes.post('/import', ExternalApiController.importRoteiro);
+
 // CRUD de Roteiros
 roteiroRoutes.post('/', RoteiroController.create);
 roteiroRoutes.get('/', RoteiroController.getAll);
-roteiroRoutes.get('/:roteiroId', RoteiroController.getById);
 roteiroRoutes.put('/:roteiroId', RoteiroController.update);
 roteiroRoutes.delete('/:roteiroId', RoteiroController.delete);
+roteiroRoutes.get('/:roteiroId', RoteiroController.getById);
 roteiroRoutes.post('/import', ExternalApiController.importRoteiro);
 
 // Atrações vinculadas

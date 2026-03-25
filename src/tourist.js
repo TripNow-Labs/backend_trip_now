@@ -3,11 +3,11 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
-const { getCuratedTouristCities, getRawCuratedCities } = require('../services/curatedCities');
-const { searchCityWithAttractions, findCity } = require('../services/geoapify');
+const { getCuratedTouristCities, getRawCuratedCities } = require('./apps/services/curatedCities');
+const { searchCityWithAttractions, findCity } = require('./apps/services/geoapify');
 
 // Ajuste nos caminhos para apontar para a raiz do projeto
-const PROJECT_ROOT = path.join(__dirname, '..', '..', '..');
+const PROJECT_ROOT = path.join(__dirname, '..');
 const CACHE_PATH = path.join(PROJECT_ROOT, 'cache', 'tourist_data_geoapify.json');
 const CURATED_CITIES_JSON_PATH = path.join(PROJECT_ROOT, 'data', 'curated-cities.json');
 
