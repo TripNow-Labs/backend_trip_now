@@ -23,7 +23,9 @@ app.use(cors({
 
 // Middleware para interpretar os cookies enviados nas requisições
 app.use(cookieParser());
-app.use(express.json());
+// Aumentamos para 50mb para garantir que qualquer foto passe sem erro
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Carrega todas as rotas da aplicação a partir do arquivo principal de rotas
 app.use(routes);

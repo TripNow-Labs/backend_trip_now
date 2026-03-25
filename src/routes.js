@@ -17,7 +17,7 @@ routes.get('/health', (req, res) => res.send({ message: 'Conectado com sucesso!'
 
 // DISTRIBUIÇÃO DOS MÓDULOS
 routes.use('/auth', authRoutes);
-routes.use('/users', userRoutes);      // Todas as rotas de usuário agora começam com /users
+routes.use('/user', userRoutes);      // Todas as rotas de usuário agora começam com /users
 routes.use('/roteiros', roteiroRoutes); // Todas as rotas de roteiro agora começam com /roteiros
 routes.use('/api/tourist', touristRoutes);
 
