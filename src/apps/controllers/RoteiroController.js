@@ -1,9 +1,12 @@
+const fs = require('fs');
+const path = require('path');
 const Roteiro = require('../models/Roteiro');
 const Cidade = require('../models/Cidade');
 const Pais = require('../models/Pais');
 const AtracoesTuristicas = require('../models/AtracaoTuristica'); // Verifique o nome do arquivo
 const RoteiroAtracao = require('../models/RoteiroAtracao');
 const Database = require('../../database/index');
+
 
 class RoteiroController {
 
@@ -247,7 +250,42 @@ class RoteiroController {
       return res.status(500).json({ message: 'Falha ao atualizar o roteiro.', details: error.message });
     }
   }
+  // --- OBTER CIDADES DO JSON (Sugestões) ---
+  async getCuratedCities(req, res) {
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      // Caminho para o seu arquivo JSON na raiz do projeto
+      const filePath = path.resolve(process.cwd(), 'data', 'curated-cities.json');
+      
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: 'Arquivo de cidades não encontrado.' });
+      }
 
+      const data = fs.readFileSync(filePath, 'utf-8');
+      return res.status(200).json(JSON.parse(data));
+    } catch (error) {
+      return res.status(500).json({ error: 'Erro ao carregar cidades.' });
+    }
+  }
+  // --- BUSCAR CIDADE (GET /roteiros/search) ---
+  async searchCity(req, res) {
+    try {
+      const { q } = req.query;
+      const fs = require('fs');
+      const path = require('path');
+      const filePath = path.resolve(process.cwd(), 'data', 'curated-cities.json');
+      
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      const filtered = data.filter(item => 
+        item.cidade.nome.toLowerCase().includes(q.toLowerCase())
+      );
+
+      return res.json(filtered);
+    } catch (error) {
+      return res.status(500).json({ error: 'Erro na busca.' });
+    }
+  }
   // --- DELETAR (DELETE /roteiros/:roteiroId) ---
   async delete(req, res) {
     try {
