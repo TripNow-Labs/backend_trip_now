@@ -1,13 +1,13 @@
-
 const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
-const { getCuratedTouristCities, getRawCuratedCities } = require('./apps/services/curatedCities');
-const { searchCityWithAttractions, findCity } = require('./apps/services/geoapify');
+const { getCuratedTouristCities, getRawCuratedCities } = require('../apps/services/curatedCities');
+const { searchCityWithAttractions, findCity } = require('../apps/services/geoapify');
+const AuthenticateMiddleware = require('../apps/middlewares/authentication');
 
-// Ajuste nos caminhos para apontar para a raiz do projeto
-const PROJECT_ROOT = path.join(__dirname, '..');
+// Ajuste nos caminhos para apontar para a raiz do projeto (agora subiu um nível a mais)
+const PROJECT_ROOT = path.join(__dirname, '..', '..');
 const CACHE_PATH = path.join(PROJECT_ROOT, 'cache', 'tourist_data_geoapify.json');
 const CURATED_CITIES_JSON_PATH = path.join(PROJECT_ROOT, 'data', 'curated-cities.json');
 
@@ -55,7 +55,7 @@ router.get('/raw-curated-cities', (req, res, next) => {
 /**
  * Rota que busca uma cidade e seus pontos turísticos.
  */
-router.get('/search', async (req, res, next) => {
+router.get('/search', AuthenticateMiddleware, async (req, res, next) => {
   const cityName = req.query.q;
   if (!cityName) {
     return res.status(400).json({ message: 'O parâmetro de busca "q" é obrigatório.' });
@@ -75,7 +75,7 @@ router.get('/search', async (req, res, next) => {
 /**
  * Rota para atualizar as cidades curadas (escreve no JSON).
  */
-router.post('/update-curated-cities', (req, res, next) => {
+router.post('/update-curated-cities', AuthenticateMiddleware, (req, res, next) => {
     const { curatedCities } = req.body;
 
     if (!curatedCities || !Array.isArray(curatedCities)) {
@@ -102,7 +102,7 @@ router.post('/update-curated-cities', (req, res, next) => {
 /**
  * Rota para limpar o cache.
  */
-router.post('/clear-cache', (req, res, next) => {
+router.post('/clear-cache', AuthenticateMiddleware, (req, res, next) => {
     try {
         if (fs.existsSync(CACHE_PATH)) {
             fs.unlinkSync(CACHE_PATH);
