@@ -7,11 +7,6 @@ const { getPexelsImage } = require('./pexels');
 
 const API_KEY = process.env.GEOAPIFY_API_KEY;
 const PROJECT_ROOT = path.join(__dirname, '..', '..', '..');
-const SEARCH_CACHE_DIR = path.join(PROJECT_ROOT, 'cache');
-
-if (!fs.existsSync(SEARCH_CACHE_DIR)) {
-    fs.mkdirSync(SEARCH_CACHE_DIR, { recursive: true });
-}
 
 if (!API_KEY) {
     console.error("Erro: A variável de ambiente GEOAPIFY_API_KEY não está definida.");
@@ -56,17 +51,6 @@ async function findAttractionByName(name, lat, lon) {
 
 async function searchCityWithAttractions(cityName) {
     const normalizedCityName = cityName.trim().toLowerCase();
-    const cachePath = path.join(SEARCH_CACHE_DIR, `${encodeURIComponent(normalizedCityName)}.json`);
-
-    if (fs.existsSync(cachePath)) {
-        try {
-            const cachedData = JSON.parse(fs.readFileSync(cachePath, 'utf-8'));
-            console.log(`Dados de busca para \"${cityName}\" encontrados no cache! Servindo do arquivo local.`);
-            return cachedData;
-        } catch (e) {
-            console.warn(`Cache de busca para ${cityName} corrompido. Buscando novos dados.`);
-        }
-    }
 
     console.log(`Buscando dados de busca para \"${cityName}\" da API...`);
     const cityData = await findCity(cityName);
@@ -144,8 +128,6 @@ async function searchCityWithAttractions(cityName) {
         pontos_turisticos: attractionsDetails
     };
     
-    fs.writeFileSync(cachePath, JSON.stringify(result, null, 2));
-    console.log(`Dados de busca para \"${cityName}\" salvos no cache. O cacheManager agendará a exclusão.`);
 
     return result;
 }

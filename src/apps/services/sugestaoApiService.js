@@ -2,6 +2,8 @@ require('dotenv').config();
 const { getWikipediaDescription, getWikipediaImage } = require('./wikipedia');
 const { getCurrencyByCountryCode } = require('./currency');
 const { getPexelsImage } = require('./pexels');
+const redisCache = require('./RedisCacheService');
+const db = require('../../database');
 
 const API_KEY = process.env.GEOAPIFY_API_KEY;
 
@@ -80,6 +82,41 @@ async function processAttractions(attractions, cityInfo, currency) {
 async function findSuggestions(cityName, category = null) {
     // Removendo o log anterior para manter o console limpo.
     console.log(`\n[DEBUG] Iniciando findSuggestions para cidade: "${cityName}" com categoria: "${category}"`);
+
+    const cacheKey = `search:suggestions:${cityName.toLowerCase()}:${category || 'all'}`;
+
+    // 1. Tenta buscar no Redis (Memória RAM - Nível 1)
+    const redisData = await redisCache.get(cacheKey);
+    if (redisData) {
+        console.log(`[DEBUG] 🚀 Dados retornados do Redis (Cache Nível 1)! Chave: ${cacheKey}`);
+        return redisData;
+    }
+
+    // 2. Tenta buscar no PostgreSQL (Banco de Dados - Nível 2)
+    try {
+        const [pgResult] = await db.connection.query(
+            `SELECT resultado_json, data_expiracao FROM api_cache WHERE chave_pesquisa = :key`,
+            { replacements: { key: cacheKey } }
+        );
+
+        if (pgResult && pgResult.length > 0) {
+            const row = pgResult[0];
+            if (new Date(row.data_expiracao) > new Date()) {
+                console.log(`[DEBUG] 🗄️ Dados retornados do PostgreSQL (Cache Nível 2)! Repopulando Redis...`);
+                const data = typeof row.resultado_json === 'string' ? JSON.parse(row.resultado_json) : row.resultado_json;
+                
+                // Carrega de volta no Redis para a próxima busca ser ultra rápida
+                await redisCache.set(cacheKey, data, 86400); // Deixa no Redis por apenas 1 dia para economizar RAM
+                return data;
+            } else {
+                // Se o dado no banco expirou, apagamos para renovar a pesquisa na API
+                await db.connection.query(`DELETE FROM api_cache WHERE chave_pesquisa = :key`, { replacements: { key: cacheKey } });
+            }
+        }
+    } catch (dbError) {
+        console.error('[DEBUG] Erro ao buscar no PostgreSQL (A tabela api_cache já foi criada?):', dbError.message);
+    }
+
     const cityData = await findCityCoords(cityName);
     if (!cityData) return [];
 
@@ -126,7 +163,31 @@ async function findSuggestions(cityName, category = null) {
         }
 
         // Processa as atrações para o formato final
-        return await processAttractions(attractionsFromApi, { name: localizedCityName, country }, currency);
+        const processedAttractions = await processAttractions(attractionsFromApi, { name: localizedCityName, country }, currency);
+
+        // 3. Salva os resultados nos dois Caches (Redis e PostgreSQL)
+        
+        // Salva no Redis (Tempo curto de RAM - 1 dia)
+        await redisCache.set(cacheKey, processedAttractions, 86400);
+
+        // Salva no PostgreSQL (Tempo longo - 30 dias)
+        try {
+            const expiracao = new Date();
+            expiracao.setDate(expiracao.getDate() + 30);
+
+            await db.connection.query(
+                `INSERT INTO api_cache (chave_pesquisa, resultado_json, data_expiracao, created_at, updated_at) 
+                 VALUES (:key, :json, :expiracao, NOW(), NOW())
+                 ON CONFLICT (chave_pesquisa) 
+                 DO UPDATE SET resultado_json = EXCLUDED.resultado_json, data_expiracao = EXCLUDED.data_expiracao, updated_at = NOW()`,
+                { replacements: { key: cacheKey, json: JSON.stringify(processedAttractions), expiracao } }
+            );
+            console.log(`[DEBUG] 💾 Dados das APIs salvos no PostgreSQL permanentemente! Chave: ${cacheKey}`);
+        } catch (dbError) {
+            console.error('[DEBUG] Erro ao salvar no PostgreSQL:', dbError.message);
+        }
+
+        return processedAttractions;
 
     } catch (error) {
         console.error(`SugestaoApiService findSuggestions error for "${cityName}" with category "${category}":`, error);
