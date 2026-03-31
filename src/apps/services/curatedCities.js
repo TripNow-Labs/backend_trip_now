@@ -6,12 +6,7 @@ const { getCurrencyByCountryCode } = require('./currency');
 const { getPexelsImage } = require('./pexels');
 
 const PROJECT_ROOT = path.join(__dirname, '..', '..', '..');
-const CACHE_DIR = path.join(PROJECT_ROOT, 'cache');
 const CURATED_CITIES_JSON_PATH = path.join(PROJECT_ROOT, 'data', 'curated-cities.json');
-
-if (!fs.existsSync(CACHE_DIR)) {
-  fs.mkdirSync(CACHE_DIR);
-}
 
 // Função para ler as cidades curadas do arquivo JSON
 function getRawCuratedCities() {
@@ -21,20 +16,6 @@ function getRawCuratedCities() {
 
 async function fetchFromApiAndCache(cityName) {
     const normalizedCityName = cityName.trim().toLowerCase();
-    const cachePath = path.join(CACHE_DIR, `tourist_data_curated_${encodeURIComponent(normalizedCityName)}.json`);
-    const now = new Date().getTime();
-
-    if (fs.existsSync(cachePath)) {
-        try {
-            const cachedData = JSON.parse(fs.readFileSync(cachePath, 'utf-8'));
-            if (now - cachedData.timestamp < (24 * 60 * 60 * 1000)) { // 24 horas de cache
-                console.log(`Dados curados para \"${cityName}\" encontrados no cache! Servindo do arquivo local.`);
-                return cachedData.data;
-            }
-        } catch (e) {
-            console.warn(`Não foi possível ler o cache curado para ${cityName}, buscando novos dados.`);
-        }
-    }
     
     console.log(`Buscando dados curados para \"${cityName}\" da API...`);
     const curatedCities = getRawCuratedCities();
@@ -101,9 +82,6 @@ async function fetchFromApiAndCache(cityName) {
         },
         pontos_turisticos: touristSpots.filter(Boolean),
     };
-
-    fs.writeFileSync(cachePath, JSON.stringify({ timestamp: now, data: result }, null, 2));
-    console.log(`Dados curados para \"${cityName}\" salvos no cache!`);
 
     return result;
 }

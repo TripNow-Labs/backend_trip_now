@@ -7,7 +7,6 @@ const cookieParser = require('cookie-parser');
 
 // Importa os componentes que foram movidos da pasta 'api'
 const errorHandler = require('./apps/middlewares/errorHandler');
-const { watchCache } = require('./apps/services/cacheManager');
 
 const app = express();
 
@@ -32,9 +31,6 @@ app.use(routes);
 
 // Middleware de tratamento de erros. Deve ser o último `app.use` antes do `app.listen`.
 app.use(errorHandler);
-
-// Inicia o monitoramento de arquivos na pasta de cache
-watchCache();
 
 app.listen(process.env.PORT, () => {
     const port = process.env.PORT || 3333;
