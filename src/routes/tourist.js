@@ -1,16 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
 const { getCuratedTouristCities, getRawCuratedCities } = require('../apps/services/curatedCities');
 const { searchCityWithAttractions, findCity } = require('../apps/services/geoapify');
 const AuthenticateMiddleware = require('../apps/middlewares/authentication');
 const redisCache = require('../apps/services/RedisCacheService');
 const db = require('../database');
-
-// Ajuste nos caminhos para apontar para a raiz do projeto (agora subiu um nível a mais)
-const PROJECT_ROOT = path.join(__dirname, '..', '..');
-const CURATED_CITIES_JSON_PATH = path.join(PROJECT_ROOT, 'data', 'curated-cities.json');
 
 /**
  * Rota que retorna uma lista curada de cidades turísticas.
@@ -24,7 +18,7 @@ router.get('/curated-cities', async (req, res, next) => {
     // 1. Tenta buscar no Redis (Nível 1 - Velocidade Extrema)
     const redisData = await redisCache.get(cacheKey);
     if (redisData) {
-        console.log('🚀 Servindo cidades curadas do Redis (L1).');
+        console.log('Servindo cidades curadas do Redis (L1).');
         return res.json(redisData);
     }
 
@@ -37,7 +31,7 @@ router.get('/curated-cities', async (req, res, next) => {
         if (pgResult && pgResult.length > 0) {
             const row = pgResult[0];
             if (new Date(row.data_expiracao) > new Date()) {
-                console.log('🗄️ Servindo cidades curadas do PostgreSQL (L2). Repopulando Redis...');
+                console.log('Servindo cidades curadas do PostgreSQL (L2). Repopulando Redis...');
                 const data = typeof row.resultado_json === 'string' ? JSON.parse(row.resultado_json) : row.resultado_json;
                 await redisCache.set(cacheKey, data, 86400); // Repopula Redis por 1 dia
                 return res.json(data);
@@ -51,8 +45,30 @@ router.get('/curated-cities', async (req, res, next) => {
 
     // 3. Se não encontrou em nenhum dos bancos, processa e gera novamente
     console.log('Cache não encontrado ou expirado. Gerando dados das cidades curadas...');
-    const rawCities = getRawCuratedCities();
-    const cityDataPromises = rawCities.map(city => getCuratedTouristCities(city.name));
+    
+    let rawCities;
+    try {
+        // Busca a configuração salva pelo Admin no banco
+        const [pgResult] = await db.connection.query(
+            `SELECT resultado_json FROM api_cache WHERE chave_pesquisa = 'config:raw_curated_cities'`
+        );
+        if (pgResult && pgResult.length > 0) {
+            rawCities = typeof pgResult[0].resultado_json === 'string' ? JSON.parse(pgResult[0].resultado_json) : pgResult[0].resultado_json;
+        } else {
+            rawCities = getRawCuratedCities(); // Se for a primeira vez rodando, pega do JSON original
+        }
+    } catch(e) {
+        rawCities = getRawCuratedCities();
+    }
+
+    // Passamos o objeto 'city' inteiro, que já contém os touristSpots,
+    // para evitar releituras e inconsistências.
+    const cityDataPromises = rawCities.map(city =>
+        getCuratedTouristCities(city).catch(error => {
+            console.error(`[Aviso] Falha ao processar a cidade "${city.name}":`, error.message);
+            return null; // Evita que uma cidade problemática quebre toda a requisição
+        })
+    );
     const allCityData = await Promise.all(cityDataPromises);
     const filteredData = allCityData.filter(data => data !== null);
 
@@ -82,19 +98,6 @@ router.get('/curated-cities', async (req, res, next) => {
 });
 
 /**
- * Rota para o painel de admin, retorna a lista bruta de cidades do JSON.
- */
-router.get('/raw-curated-cities', (req, res, next) => {
-    try {
-        const cities = getRawCuratedCities();
-        // O frontend espera um objeto com a chave "data"
-        res.json({ data: cities });
-    } catch (error) {
-        next(error);
-    }
-});
-
-/**
  * Rota que busca uma cidade e seus pontos turísticos.
  */
 router.get('/search', AuthenticateMiddleware, async (req, res, next) => {
@@ -110,7 +113,7 @@ router.get('/search', AuthenticateMiddleware, async (req, res, next) => {
     // 1. Tenta buscar no Redis (Nível 1 - Velocidade Extrema)
     const redisData = await redisCache.get(cacheKey);
     if (redisData) {
-      console.log(`🚀 Servindo busca de cidade "${cityName}" do Redis (L1).`);
+      console.log(`Servindo busca de cidade "${cityName}" do Redis (L1).`);
       return res.json(redisData);
     }
 
@@ -123,7 +126,7 @@ router.get('/search', AuthenticateMiddleware, async (req, res, next) => {
       if (pgResult && pgResult.length > 0) {
         const row = pgResult[0];
         if (new Date(row.data_expiracao) > new Date()) {
-          console.log(`🗄️ Servindo busca de cidade "${cityName}" do PostgreSQL (L2). Repopulando Redis...`);
+          console.log(`Servindo busca de cidade "${cityName}" do PostgreSQL (L2). Repopulando Redis...`);
           const data = typeof row.resultado_json === 'string' ? JSON.parse(row.resultado_json) : row.resultado_json;
           await redisCache.set(cacheKey, data, 86400); // Repopula Redis por 1 dia
           return res.json(data);
@@ -163,55 +166,6 @@ router.get('/search', AuthenticateMiddleware, async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
-
-/**
- * Rota para atualizar as cidades curadas (escreve no JSON).
- */
-router.post('/update-curated-cities', AuthenticateMiddleware, async (req, res, next) => {
-    const { curatedCities } = req.body;
-
-    if (!curatedCities || !Array.isArray(curatedCities)) {
-        return res.status(400).json({ message: 'O corpo da requisição deve conter um array "curatedCities".' });
-    }
-
-    try {
-        fs.writeFileSync(CURATED_CITIES_JSON_PATH, JSON.stringify(curatedCities, null, 2), 'utf8');
-
-        // Invalida os novos caches do Redis e Banco de Dados
-        const cacheKey = 'search:curated_cities';
-        await redisCache.invalidate(cacheKey);
-        try {
-            await db.connection.query(`DELETE FROM api_cache WHERE chave_pesquisa = :key`, { replacements: { key: cacheKey } });
-        } catch(e) {}
-
-        console.log('Caches invalidados após atualização das cidades curadas.');
-
-        res.json({ message: 'Cidades curadas e cache atualizados com sucesso!' });
-
-    } catch (error) {
-        console.error('Erro ao salvar as cidades curadas:', error);
-        next(new Error('Ocorreu um erro interno ao salvar as alterações.'));
-    }
-});
-
-/**
- * Rota para limpar o cache.
- */
-router.post('/clear-cache', AuthenticateMiddleware, async (req, res, next) => {
-    try {
-        // Limpa os novos níveis de cache
-        const cacheKey = 'search:curated_cities';
-        await redisCache.invalidate(cacheKey);
-        try {
-            await db.connection.query(`DELETE FROM api_cache WHERE chave_pesquisa = :key`, { replacements: { key: cacheKey } });
-        } catch(e) {}
-
-        res.json({ message: 'Todos os caches (Arquivo, Redis e Banco) foram limpos com sucesso!' });
-    } catch (error) {
-        console.error('Erro ao limpar o cache:', error);
-        next(new Error('Ocorreu um erro interno ao limpar o cache.'));
-    }
 });
 
 module.exports = router;

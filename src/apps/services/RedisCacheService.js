@@ -24,7 +24,7 @@ class RedisCacheService {
     this.client = redis.createClient(options);
 
     this.client.on('error', (err) => console.error('Erro no cliente Redis:', err));
-    this.client.on('connect', () => console.log('🚀 Redis conectado com sucesso!'));
+    this.client.on('connect', () => console.log('😎 Redis conectado com sucesso!'));
 
     this.client.connect();
   }
