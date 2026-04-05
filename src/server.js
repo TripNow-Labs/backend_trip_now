@@ -34,5 +34,5 @@ app.use(errorHandler);
 
 app.listen(process.env.PORT, () => {
     const port = process.env.PORT || 3333;
-    console.log(`🚀 Servidor unificado rodando na porta ${port}`);
+    console.log(`👽 Servidor rodando na porta ${port}`);
 });

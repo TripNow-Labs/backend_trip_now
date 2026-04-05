@@ -14,15 +14,14 @@ function getRawCuratedCities() {
     return JSON.parse(fileContent);
 }
 
-async function fetchFromApiAndCache(cityName) {
-    const normalizedCityName = cityName.trim().toLowerCase();
-    
-    console.log(`Buscando dados curados para \"${cityName}\" da API...`);
-    const curatedCities = getRawCuratedCities();
-    const cityData = curatedCities.find(c => c.name.toLowerCase() === normalizedCityName);
+async function fetchFromApiAndCache(cityData) {
+    const { name: cityName, touristSpots: spots } = cityData;
 
-    if (!cityData) {
-        console.error(`Cidade curada \"${cityName}\" não encontrada.`);
+    console.log(`Buscando dados curados para \"${cityName}\" da API...`);
+
+    // Validação essencial para garantir que a lista de pontos turísticos existe.
+    if (!spots || !Array.isArray(spots)) {
+        console.error(`A cidade curada \"${cityName}\" não possui uma lista de 'touristSpots'.`);
         return null;
     }
 
@@ -37,7 +36,7 @@ async function fetchFromApiAndCache(cityName) {
         cityImage = await getPexelsImage({ attractionName: cityName, city: cityName, country: country });
     }
 
-    const touristSpots = await Promise.all(cityData.touristSpots.map(async (attractionName) => {
+    const processedTouristSpots = await Promise.all(spots.map(async (attractionName) => {
         const attractionDetails = await findAttractionByName(attractionName, lat, lon);
         const attractionDescription = await getWikipediaDescription(attractionName);
         let attractionImage = await getWikipediaImage({ attractionName: attractionName, city: cityName, country: country });
@@ -80,15 +79,15 @@ async function fetchFromApiAndCache(cityName) {
             latitude: lat,
             longitude: lon
         },
-        pontos_turisticos: touristSpots.filter(Boolean),
+        pontos_turisticos: processedTouristSpots.filter(Boolean),
     };
 
     return result;
 }
 
 
-async function getCuratedTouristCities(cityName) {
-  return await fetchFromApiAndCache(cityName);
+async function getCuratedTouristCities(cityObject) {
+  return await fetchFromApiAndCache(cityObject);
 }
 
 module.exports = { getCuratedTouristCities, getRawCuratedCities };
