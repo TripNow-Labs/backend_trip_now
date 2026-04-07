@@ -27,9 +27,12 @@ module.exports = async (req, res, next) => {
         }
         const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
-        req.userId = decoded.userId;
+        req.userId = decoded.id;
 
-        return next();
+    if (!req.userId) {
+        return res.status(401).json({ error: 'Token não contém ID do usuário.' });
+    }
+    return next();
 
     } catch (err) {
         console.error('Erro de Autenticação:', err.message);

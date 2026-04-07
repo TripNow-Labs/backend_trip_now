@@ -18,7 +18,7 @@ app.use(cors({
     origin: 'http://localhost:3000', // Permite requisições apenas desta origem
     credentials: true, // Permite que o navegador envie cookies
     allowedHeaders: ['Content-Type', 'Authorization'], // Permite explicitamente esses cabeçalhos
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Permite esses métodos HTTP
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // Permite esses métodos HTTP
 }));
 
 // Middleware para interpretar os cookies enviados nas requisições
@@ -36,7 +36,7 @@ app.use(errorHandler);
 // Inicia o monitoramento de arquivos na pasta de cache
 watchCache();
 
-app.listen(process.env.PORT, () => {
-    const port = process.env.PORT || 3333;
-    console.log(`🚀 Servidor unificado rodando na porta ${port}`);
+const PORT = process.env.PORT || 3333;
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor unificado rodando na porta ${PORT}`);
 });
