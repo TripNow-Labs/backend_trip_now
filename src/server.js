@@ -5,9 +5,10 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
+const { watchCache } = require('./apps/services/cacheManager');
+
 // Importa os componentes que foram movidos da pasta 'api'
 const errorHandler = require('./apps/middlewares/errorHandler');
-const { watchCache } = require('./apps/services/cacheManager');
 
 const app = express();
 
@@ -38,5 +39,5 @@ watchCache();
 
 const PORT = process.env.PORT || 3333;
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor unificado rodando na porta ${PORT}`);
+    console.log(`🚀 Servidor unificado rodando na porta ${PORT} 👽`);
 });

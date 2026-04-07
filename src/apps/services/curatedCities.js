@@ -4,14 +4,11 @@ const { getWikipediaDescription, getWikipediaImage } = require('./wikipedia');
 const { findCity, findAttractionByName } = require('./geoapify');
 const { getCurrencyByCountryCode } = require('./currency');
 const { getPexelsImage } = require('./pexels');
+const { getPixabayImage } = require('./pixabay');
+const { searchLocations, getCityDetails, getLocationPhotos } = require('./tripadvisorApiService');
 
 const PROJECT_ROOT = path.join(__dirname, '..', '..', '..');
-const CACHE_DIR = path.join(PROJECT_ROOT, 'cache');
 const CURATED_CITIES_JSON_PATH = path.join(PROJECT_ROOT, 'data', 'curated-cities.json');
-
-if (!fs.existsSync(CACHE_DIR)) {
-  fs.mkdirSync(CACHE_DIR);
-}
 
 // Função para ler as cidades curadas do arquivo JSON
 function getRawCuratedCities() {
@@ -19,29 +16,13 @@ function getRawCuratedCities() {
     return JSON.parse(fileContent);
 }
 
-async function fetchFromApiAndCache(cityName) {
-    const normalizedCityName = cityName.trim().toLowerCase();
-    const cachePath = path.join(CACHE_DIR, `tourist_data_curated_${encodeURIComponent(normalizedCityName)}.json`);
-    const now = new Date().getTime();
+async function fetchFromApiAndCache(cityData) {
+    const { name: cityName, touristSpots: spots } = cityData;
 
-    if (fs.existsSync(cachePath)) {
-        try {
-            const cachedData = JSON.parse(fs.readFileSync(cachePath, 'utf-8'));
-            if (now - cachedData.timestamp < (24 * 60 * 60 * 1000)) { // 24 horas de cache
-                console.log(`Dados curados para \"${cityName}\" encontrados no cache! Servindo do arquivo local.`);
-                return cachedData.data;
-            }
-        } catch (e) {
-            console.warn(`Não foi possível ler o cache curado para ${cityName}, buscando novos dados.`);
-        }
-    }
-    
-    console.log(`Buscando dados curados para \"${cityName}\" da API...`);
-    const curatedCities = getRawCuratedCities();
-    const cityData = curatedCities.find(c => c.name.toLowerCase() === normalizedCityName);
+    console.log(`Buscando dados curados para "${cityName}" da API com TripAdvisor como apoio...`);
 
-    if (!cityData) {
-        console.error(`Cidade curada \"${cityName}\" não encontrada.`);
+    if (!spots || !Array.isArray(spots)) {
+        console.error(`A cidade curada "${cityName}" não possui uma lista de 'touristSpots'.`);
         return null;
     }
 
@@ -50,17 +31,49 @@ async function fetchFromApiAndCache(cityName) {
 
     const { lat, lon, country, country_code } = citySearchResult.properties;
     const currency = await getCurrencyByCountryCode(country_code) || 'USD';
-    let cityImage = await getWikipediaImage({ attractionName: cityName });
+    
+    // Identifica o ID da cidade no TripAdvisor para pegar FOTO PRINCIPAL e DESCRIÇÃO
+    const citySearch = await searchLocations(cityName, 'geos');
+    const cityLocationId = citySearch && citySearch.length > 0 ? citySearch[0].location_id : null;
 
+    let cityImage = null;
+    let cityDescription = null;
+
+    if (cityLocationId) {
+        cityImage = await getLocationPhotos(cityLocationId);
+        const cityDetailsData = await getCityDetails(cityLocationId);
+        cityDescription = cityDetailsData?.description;
+    }
+
+    if (!cityDescription) {
+        cityDescription = await getWikipediaDescription(cityName);
+    }
+    
+    // Fallbacks para foto da Cidade
+    if (!cityImage) {
+        cityImage = await getPixabayImage({ cityName: cityName, country: country });
+    }
     if (!cityImage) {
         cityImage = await getPexelsImage({ attractionName: cityName, city: cityName, country: country });
     }
 
-    const touristSpots = await Promise.all(cityData.touristSpots.map(async (attractionName) => {
+    // Processamento de cada ponto turístico da Curadoria (JSON)
+    const processedTouristSpots = await Promise.all(spots.map(async (attractionName) => {
         const attractionDetails = await findAttractionByName(attractionName, lat, lon);
         const attractionDescription = await getWikipediaDescription(attractionName);
-        let attractionImage = await getWikipediaImage({ attractionName: attractionName, city: cityName, country: country });
+        
+        let attractionImage = null;
+        // Bate no TripAdvisor para extrair a FOTO PRINCIPAL do Ponto Curado
+        const attrSearch = await searchLocations(attractionName, 'attractions');
+        const attrLocationId = attrSearch && attrSearch.length > 0 ? attrSearch[0].location_id : null;
+        if (attrLocationId) {
+            attractionImage = await getLocationPhotos(attrLocationId);
+        }
 
+        // Fallbacks gratuitos
+        if (!attractionImage) {
+            attractionImage = await getPixabayImage({ cityName: attractionName, country: cityName });
+        }
         if (!attractionImage) {
             attractionImage = await getPexelsImage({ attractionName: attractionName, city: cityName, country: country });
         }
@@ -86,8 +99,6 @@ async function fetchFromApiAndCache(cityName) {
         };
     }));
 
-    const cityDescription = await getWikipediaDescription(cityName);
-
     const result = {
         pais: { nome: country, continente: citySearchResult.properties.continent, moeda: currency },
         cidade: {
@@ -99,18 +110,15 @@ async function fetchFromApiAndCache(cityName) {
             latitude: lat,
             longitude: lon
         },
-        pontos_turisticos: touristSpots.filter(Boolean),
+        pontos_turisticos: processedTouristSpots.filter(Boolean),
     };
-
-    fs.writeFileSync(cachePath, JSON.stringify({ timestamp: now, data: result }, null, 2));
-    console.log(`Dados curados para \"${cityName}\" salvos no cache!`);
 
     return result;
 }
 
 
-async function getCuratedTouristCities(cityName) {
-  return await fetchFromApiAndCache(cityName);
+async function getCuratedTouristCities(cityObject) {
+  return await fetchFromApiAndCache(cityObject);
 }
 
 module.exports = { getCuratedTouristCities, getRawCuratedCities };

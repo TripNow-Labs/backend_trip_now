@@ -4,14 +4,10 @@ const path = require('path');
 const { getWikipediaDescription, getWikipediaImage } = require('./wikipedia');
 const { getCurrencyByCountryCode } = require('./currency');
 const { getPexelsImage } = require('./pexels');
+const { getPixabayImage } = require('./pixabay');
+const { searchLocations, getCityDetails, getLocationPhotos } = require('./tripadvisorApiService');
 
 const API_KEY = process.env.GEOAPIFY_API_KEY;
-const PROJECT_ROOT = path.join(__dirname, '..', '..', '..');
-const SEARCH_CACHE_DIR = path.join(PROJECT_ROOT, 'cache');
-
-if (!fs.existsSync(SEARCH_CACHE_DIR)) {
-    fs.mkdirSync(SEARCH_CACHE_DIR, { recursive: true });
-}
 
 if (!API_KEY) {
     console.error("Erro: A variável de ambiente GEOAPIFY_API_KEY não está definida.");
@@ -55,39 +51,56 @@ async function findAttractionByName(name, lat, lon) {
 }
 
 async function searchCityWithAttractions(cityName) {
-    const normalizedCityName = cityName.trim().toLowerCase();
-    const cachePath = path.join(SEARCH_CACHE_DIR, `${encodeURIComponent(normalizedCityName)}.json`);
-
-    if (fs.existsSync(cachePath)) {
-        try {
-            const cachedData = JSON.parse(fs.readFileSync(cachePath, 'utf-8'));
-            console.log(`Dados de busca para \"${cityName}\" encontrados no cache! Servindo do arquivo local.`);
-            return cachedData;
-        } catch (e) {
-            console.warn(`Cache de busca para ${cityName} corrompido. Buscando novos dados.`);
-        }
-    }
-
-    console.log(`Buscando dados de busca para \"${cityName}\" da API...`);
-    const cityData = await findCity(cityName);
-    if (!cityData) return null;
-
-    const { lat, lon, country, country_code, city: localizedCityName, continent } = cityData.properties;
+    console.log(`Buscando dados para "${cityName}" usando o TripAdvisor como inteligência base...`);
     
-    let cityImage = await getWikipediaImage({ attractionName: localizedCityName });
-    if (!cityImage) {
-        cityImage = await getPexelsImage({ attractionName: localizedCityName, city: localizedCityName, country: country });
+    // 1. Usa o TripAdvisor para pegar o Nome Oficial da Cidade e seu ID
+    const citySearch = await searchLocations(cityName, 'geos');
+    if (!citySearch || citySearch.length === 0) {
+        console.log(`Cidade "${cityName}" não encontrada no TripAdvisor.`);
+        return null; // A rota tratará este 404
     }
+    
+    const cityLocationId = citySearch[0].location_id;
+    const exactCityName = citySearch[0].name;
 
-    const [attractions, cityDescription, currency] = await Promise.all([
-        findAttractions(lat, lon),
-        getWikipediaDescription(localizedCityName, 'city'),
-        getCurrencyByCountryCode(country_code)
+    // 2. Faz buscas em paralelo para otimizar velocidade estrutural
+    const [cityDetailsData, cityDataGeoapify, attractionsData] = await Promise.all([
+        getCityDetails(cityLocationId), // Descrição da Cidade via TripAdvisor
+        findCity(exactCityName),        // Coordenadas via Geoapify
+        searchLocations(cityName, 'attractions') // Lista de atrações via TripAdvisor
     ]);
 
-    const attractionsDetails = await Promise.all(attractions.map(async (attraction) => {
-        const props = attraction.properties;
-        const name = props.name;
+    const cityDescription = cityDetailsData?.description || await getWikipediaDescription(exactCityName, 'city');
+    
+    if (!cityDataGeoapify) {
+        console.log(`Aviso: Dados geográficos não encontrados no Geoapify para "${exactCityName}".`);
+        return null;
+    }
+
+    const { lat, lon, country, country_code, continent } = cityDataGeoapify.properties;
+    
+    // Imagem da cidade PRINCIPAL do TripAdvisor (fallback nas gratuitas)
+    let cityImage = await getLocationPhotos(cityLocationId);
+    if (!cityImage) {
+        cityImage = await getPixabayImage({ cityName: exactCityName, country: country });
+    }
+    if (!cityImage) {
+        cityImage = await getPexelsImage({ attractionName: exactCityName, city: exactCityName, country: country });
+    }
+
+    const currency = await getCurrencyByCountryCode(country_code);
+
+    // TripAdvisor retorna os Nomes e IDs de Atrações. Limitamos a 8 para não estourar requests de API
+    let atracoesList = (attractionsData && attractionsData.length > 0) 
+        ? attractionsData.slice(0, 8).map(item => ({ name: item.name, location_id: item.location_id }))
+        : [];
+
+    // 3. Demais APIs complementam os CUSTOS PESADOS e DETALHES (Zero Cost via Geoapify, Pixabay, Pexels e Wiki)
+    const attractionsDetails = await Promise.all(atracoesList.map(async (attr) => {
+        const { name, location_id } = attr;
+        // Geoapify para Endereços e Coordenadas
+        const attractionGeo = await findAttractionByName(name, lat, lon);
+        const props = attractionGeo ? attractionGeo.properties : {};
 
         let tipo = "desconhecido";
         if (props.categories && props.categories.length > 1) {
@@ -96,35 +109,31 @@ async function searchCityWithAttractions(cityName) {
             tipo = props.categories[0];
         }
 
-        let image = await getWikipediaImage({
-            attractionName: name,
-            city: localizedCityName,
-            country: country,
-            attractionType: tipo
-        });
-
+        // FOTO PRIMÁRIA DO TRIPADVISOR
+        let image = await getLocationPhotos(location_id);
+        
+        // Fallbacks gratuitos caso o TripAdvisor venha sem foto
         if (!image) {
-            image = await getPexelsImage({
-                attractionName: name,
-                city: localizedCityName,
-                country: country,
-                attractionType: tipo
-            });
+            image = await getPixabayImage({ cityName: name, country: exactCityName });
+        }
+        if (!image) {
+            image = await getWikipediaImage({ attractionName: name, city: exactCityName, country: country, attractionType: tipo });
         }
 
-        const description = await getWikipediaDescription(`${name}, ${localizedCityName}`, 'landmark');
+        // Wikipedia para Descrição da atração
+        const description = await getWikipediaDescription(`${name}, ${exactCityName}`, 'landmark');
 
         return {
-            nome: name || 'Nome não disponível',
+            nome: name,
             categoria: 'geral',
             descricao: description,
             moeda: currency,
-            e_gratuito: !props.charge,
+            e_gratuito: props.charge ? false : true,
             avaliacao: props.rank?.importance || 0,
             url_imagem: image || '',
             endereco: props.formatted || 'Endereço não disponível',
-            latitude: props.lat,
-            longitude: props.lon,
+            latitude: props.lat || null,
+            longitude: props.lon || null,
             tipo: tipo,
             website: props.website || null,
             telefone: props.contact?.phone || null,
@@ -136,16 +145,13 @@ async function searchCityWithAttractions(cityName) {
     const result = {
         pais: { nome: country, continente: continent, moeda: currency },
         cidade: {
-            nome: localizedCityName,
+            nome: exactCityName,
             descricao: cityDescription,
             url_imagem: cityImage || '',
             continente: continent
         },
         pontos_turisticos: attractionsDetails
     };
-    
-    fs.writeFileSync(cachePath, JSON.stringify(result, null, 2));
-    console.log(`Dados de busca para \"${cityName}\" salvos no cache. O cacheManager agendará a exclusão.`);
 
     return result;
 }
