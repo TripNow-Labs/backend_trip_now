@@ -33,11 +33,9 @@ app.use(routes);
 // Middleware de tratamento de erros. Deve ser o último `app.use` antes do `app.listen`.
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 3333;
-
 
 // configurações funcionais do servidor:
 app.listen(process.env.PORT, () => {
-const port = process.env.PORT || 3333;
-console.log(`👽 Servidor rodando na porta ${PORT}`);
+    const port = process.env.PORT || 3333;
+    console.log(`👽 Servidor rodando na porta ${port}`);
 });

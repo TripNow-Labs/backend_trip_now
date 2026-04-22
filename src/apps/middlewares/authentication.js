@@ -29,10 +29,8 @@ module.exports = async (req, res, next) => {
 
         req.userId = decoded.userId;
 
-    if (!req.userId) {
-        return res.status(401).json({ error: 'Token não contém ID do usuário.' });
-    }
-    return next();
+    
+        return next();
 
     } catch (err) {
         console.error('Erro de Autenticação:', err.message);
