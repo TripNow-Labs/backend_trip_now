@@ -165,7 +165,7 @@ class UserController {
       if (data_nascimento) user.data_nascimento = data_nascimento;
       if (cidade) user.cidade = cidade; // Salva string direto
       if (pais) user.pais = pais;       // Salva string direto
-      if (url_foto_perfil) user.url_foto_perfil = url_foto_perfil;
+      // -- if (url_foto_perfil) user.url_foto_perfil = url_foto_perfil;
       
       if (password) user.password = password; // Hook fará o hash
 
@@ -174,6 +174,42 @@ class UserController {
       return res.status(200).json({ message: 'Usuário atualizado com sucesso!' });
     } catch (err) {
       return res.status(500).json({ error: `Erro ao atualizar: ${err.message}` });
+    }
+  }
+
+  // ---  . ATUALIZAR FOTO DE PERFIL (PATCH) ---
+  async updateProfileImage(req, res) {
+    try {
+      // 1. O ID do usuário vem do middleware de autenticação (AuthenticateMiddleware)
+      const { userId } = req; 
+
+      // 2. Verifica se o arquivo foi processado pelo Multer/Cloudinary
+      if (!req.file) {
+        return res.status(400).json({ message: 'Nenhuma imagem foi enviada.' });
+      }
+
+      // 3. Busca o usuário no banco
+      const user = await Users.findByPk(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'Usuário não encontrado.' });
+      }
+
+      // 4. Salva a URL gerada pelo Cloudinary (que está em req.file.path)
+      const imageUrl = req.file.path;
+      user.url_foto_perfil = imageUrl;
+      await user.save();
+
+      return res.status(200).json({
+        message: 'Foto de perfil atualizada com sucesso!',
+        url: imageUrl
+      });
+
+    } catch (error) {
+      console.error('Erro ao atualizar foto:', error);
+      return res.status(500).json({ 
+        message: 'Falha ao processar upload da imagem.', 
+        details: error.message 
+      });
     }
   }
 

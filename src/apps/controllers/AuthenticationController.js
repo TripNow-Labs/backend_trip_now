@@ -32,7 +32,7 @@ class AuthenticationController {
 
     // --- CRIAÇÃO DO TOKEN ---
     const token = jwt.sign(
-        { userId: id }, 
+        { userId: id },
         process.env.JWT_SECRET, 
         { expiresIn: process.env.EXPIRE_IN }
     );

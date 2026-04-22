@@ -29,6 +29,7 @@ module.exports = async (req, res, next) => {
 
         req.userId = decoded.userId;
 
+    
         return next();
 
     } catch (err) {
