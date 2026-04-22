@@ -5,7 +5,6 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
-const { watchCache } = require('./apps/services/cacheManager');
 
 // Importa os componentes que foram movidos da pasta 'api'
 const errorHandler = require('./apps/middlewares/errorHandler');
@@ -34,10 +33,11 @@ app.use(routes);
 // Middleware de tratamento de erros. Deve ser o último `app.use` antes do `app.listen`.
 app.use(errorHandler);
 
-// Inicia o monitoramento de arquivos na pasta de cache
-watchCache();
-
 const PORT = process.env.PORT || 3333;
-app.listen(PORT, () => {
-    console.log(`🚀 Servidor unificado rodando na porta ${PORT} 👽`);
+
+
+// configurações funcionais do servidor:
+app.listen(process.env.PORT, () => {
+const port = process.env.PORT || 3333;
+console.log(`👽 Servidor rodando na porta ${PORT}`);
 });
