@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const morgan = require('morgan');
 
+
 // Importa os componentes que foram movidos da pasta 'api'
 const errorHandler = require('./apps/middlewares/errorHandler');
 const xssSanitizer = require('./apps/middlewares/xssSanitizer');
@@ -26,7 +27,7 @@ app.use(cors({
     origin: 'http://localhost:3000', // Permite requisições apenas desta origem
     credentials: true, // Permite que o navegador envie cookies
     allowedHeaders: ['Content-Type', 'Authorization'], // Permite explicitamente esses cabeçalhos
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Permite esses métodos HTTP
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // Permite esses métodos HTTP
 }));
 
 // Middleware para interpretar os cookies enviados nas requisições
@@ -47,6 +48,8 @@ app.use('/api/v1', routes);
 // Middleware de tratamento de erros. Deve ser o último `app.use` antes do `app.listen`.
 app.use(errorHandler);
 
+
+// configurações funcionais do servidor:
 app.listen(process.env.PORT, () => {
     const port = process.env.PORT || 3333;
     console.log(`👽 Servidor rodando na porta ${port}`);

@@ -37,6 +37,7 @@ module.exports = async (req, res, next) => {
         req.userId = decoded.userId;
         req.tipoUsuario = decoded.tipo_usuario; // Extrai o cargo da payload para liberar uso de RBAC
 
+    
         return next();
 
     } catch (err) {
