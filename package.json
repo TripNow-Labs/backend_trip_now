@@ -11,13 +11,18 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.3.2",
+    "helmet": "^8.1.0",
     "jsonschema": "^1.5.0",
     "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.1",
     "nodemailer": "^7.0.10",
     "pg": "^8.20.0",
     "pg-hstore": "^2.3.4",
     "redis": "^5.11.0",
-    "sequelize": "^6.37.8"
+    "sequelize": "^6.37.8",
+    "winston": "^3.19.0",
+    "xss": "^1.0.15"
   },
   "scripts": {
     "start": "nodemon src/server.js",
