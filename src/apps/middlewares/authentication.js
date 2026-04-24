@@ -2,23 +2,30 @@ const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
 
 module.exports = async (req, res, next) => {
-    const authHeader = req.headers.authorization;
+    // Tenta pegar o token primeiramente dos cookies (prática mais segura, HttpOnly)
+    // Se não existir, utiliza o cabeçalho Authorization como fallback para compatibilidade.
+    let token = req.cookies?.token;
 
-    if (!authHeader) {
-        return res.status(401).json({ error: 'Unset token!' });
-    }
+    if (!token) {
+        const authHeader = req.headers.authorization;
 
-    // O header deve ser: "Bearer ASDFGHJKL..."
-    const parts = authHeader.split(' ');
+        if (!authHeader) {
+            return res.status(401).json({ error: 'Unset token!' });
+        }
 
-    if (parts.length !== 2) {
-        return res.status(401).json({ error: 'Unauthorized!' });
-    }
+        const parts = authHeader.split(' ');
 
-    const [scheme, token] = parts;
+        if (parts.length !== 2) {
+            return res.status(401).json({ error: 'Unauthorized!' });
+        }
 
-    if (!/^Bearer$/i.test(scheme)) {
-        return res.status(401).json({ error: 'Token mal formatado (scheme).' });
+        const [scheme, parsedToken] = parts;
+
+        if (!/^Bearer$/i.test(scheme)) {
+            return res.status(401).json({ error: 'Token mal formatado (scheme).' });
+        }
+        
+        token = parsedToken;
     }
 
     try {
@@ -28,6 +35,7 @@ module.exports = async (req, res, next) => {
         const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
         req.userId = decoded.userId;
+        req.tipoUsuario = decoded.tipo_usuario; // Extrai o cargo da payload para liberar uso de RBAC
 
     
         return next();

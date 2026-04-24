@@ -2,11 +2,15 @@ const express = require('express');
 const router = express.Router();
 const { getRawCuratedCities } = require('../apps/services/curatedCities');
 const AuthenticateMiddleware = require('../apps/middlewares/authentication');
+const authorizeRoles = require('../apps/middlewares/authorizeRoles');
 const redisCache = require('../apps/services/RedisCacheService');
 const db = require('../database');
 
-// Aplica autenticação em todas as rotas de admin de "tourist"
+// 1. Exige que o usuário possua um JWT autenticado
 router.use(AuthenticateMiddleware);
+
+// 2. Exclusividade Adicional: Exige categoricamente que a role seja 'admin' (RBAC)
+router.use(authorizeRoles(['admin']));
 
 /**
  * Rota para o painel de admin, retorna a lista bruta de cidades do JSON.
