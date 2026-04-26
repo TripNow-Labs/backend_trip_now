@@ -11,7 +11,7 @@ const db = require('../database');
  * Primeiro, tenta servir a partir de um cache consolidado. Se o cache não existir,
  * busca os dados de todas as cidades curadas, cria o cache e retorna os dados.
  */
-router.get('/curated-cities', async (req, res, next) => {
+router.get('/curated-cities', AuthenticateMiddleware, async (req, res, next) => {
   try {
     const cacheKey = 'search:curated_cities';
 
