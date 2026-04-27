@@ -1,4 +1,7 @@
 require('dotenv').config();
+const validateEnv = require('./utils/validateEnv');
+validateEnv(); // Executa a validação de ambiente (fail-fast)
+
 require('./database/index')
 const routes = require('./routes');
 const express = require('express');
@@ -16,9 +19,12 @@ const { globalLimiter } = require('./apps/middlewares/rateLimiters');
 const app = express();
 
 // Ativa todos os cabeçalhos de segurança padrão
-app.use(helmet()); 
-// Ativa o log seguro de requisições web
-app.use(morgan('combined'));
+app.use(helmet());
+
+// Ativa o log seguro de requisições web (apenas se não estiver rodando testes)
+if (process.env.NODE_ENV !== 'test') {
+    app.use(morgan('combined'));
+}
 
 // Middlewares essenciais
 // Configuração explícita do CORS para permitir credenciais (cookies)
@@ -50,7 +56,11 @@ app.use(errorHandler);
 
 
 // configurações funcionais do servidor:
-app.listen(process.env.PORT, () => {
+if (require.main === module) {
     const port = process.env.PORT || 3333;
-    console.log(`👽 Servidor rodando na porta ${port}`);
-});
+    app.listen(port, () => {
+        console.log(`👽 Servidor rodando na porta ${port}`);
+    });
+}
+
+module.exports = app;
