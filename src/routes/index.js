@@ -15,7 +15,7 @@ routes.get('/health', (req, res) => res.send({ message: 'Conectado com sucesso!'
 // DISTRIBUIÇÃO DOS MÓDULOS
 routes.use('/auth', authRoutes);
 routes.use('/user', userRoutes);
-routes.use('/roteiros', roteiroRoutes); 
+routes.use('/roteiros', roteiroRoutes);
 routes.use('/api/tourist', touristRoutes);
 routes.use('/api/admin/tourist', touristAdminRoutes);
 

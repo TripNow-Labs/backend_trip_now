@@ -5,6 +5,8 @@ const ExternalApiController = require('../apps/controllers/ExternalApiController
 const AtracaoSugestaoController = require('../apps/controllers/AtracaoSugestaoController');
 const roteiroAtracaoController = require('../apps/controllers/RoteiroAtracaoController');
 const AuthenticateMiddleware = require('../apps/middlewares/authentication');
+const schemaValidator = require('../apps/middlewares/schemaValidator');
+const { createRoteiroSchema } = require('../schemas/roteiroSchema');
 
 const roteiroRoutes = new Router();
 
@@ -17,7 +19,7 @@ roteiroRoutes.get('/search', RoteiroController.searchCity);
 roteiroRoutes.post('/import', ExternalApiController.importRoteiro);
 
 // CRUD de Roteiros
-roteiroRoutes.post('/', RoteiroController.create);
+roteiroRoutes.post('/', schemaValidator(createRoteiroSchema), RoteiroController.create);
 roteiroRoutes.get('/', RoteiroController.getAll);
 roteiroRoutes.put('/:roteiroId', RoteiroController.update);
 roteiroRoutes.delete('/:roteiroId', RoteiroController.delete);
