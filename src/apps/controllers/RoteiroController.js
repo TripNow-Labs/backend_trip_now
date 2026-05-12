@@ -165,7 +165,8 @@ class RoteiroController {
                   id: item.id,
                   atracao: item.atracao,
                   status: item.status,
-                  horario: item.horario_inicio
+                  horario: item.horario_inicio,
+                  fotos: item.fotos || [] 
               });
           });
       }

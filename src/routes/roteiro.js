@@ -8,6 +8,29 @@ const AuthenticateMiddleware = require('../apps/middlewares/authentication');
 const schemaValidator = require('../apps/middlewares/schemaValidator');
 const { createRoteiroSchema } = require('../schemas/roteiroSchema');
 
+const { storage } = require('../configs/cloudinary'); // Pega o storage que existe
+const multer = require('multer'); // Importa o multer
+
+// --- CONFIGURAÇÃO DE SEGURANÇA DO UPLOAD ---
+const upload = multer({ 
+    storage,
+    // 1. Filtro para aceitar apenas imagens
+    fileFilter: (req, file, cb) => {
+        const formatosAceitos = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+        
+        if (formatosAceitos.includes(file.mimetype)) {
+            cb(null, true); // Arquivo aprovado!
+        } else {
+            cb(new Error('Formato inválido! Envie apenas imagens (JPG, PNG ou WEBP).'), false); // Bloqueia o arquivo
+        }
+    },
+    // 2. Limite de tamanho (5MB) para não lotar o Cloudinary
+    limits: {
+        fileSize: 5 * 1024 * 1024 
+    }
+});
+
+
 const roteiroRoutes = new Router();
 
 // Aplicando o middleware em todas as rotas deste arquivo (todas são protegidas)
@@ -29,5 +52,6 @@ roteiroRoutes.post('/import', ExternalApiController.importRoteiro);
 // Atrações vinculadas
 roteiroRoutes.post('/:roteiroId/atracoes', roteiroAtracaoController.create);
 roteiroRoutes.get('/:roteiroId/sugestoes-atracoes', AtracaoSugestaoController.getSugestoes);
+roteiroRoutes.patch('/atividades/:id/fotos', upload.single('foto'), roteiroAtracaoController.uploadFoto);
 
 module.exports = roteiroRoutes;
