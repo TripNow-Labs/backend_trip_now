@@ -36,8 +36,7 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_user_id', fields: ['user_id'] },
-        { name: 'uq_user_pais', fields: ['user_id', 'pais_id'], unique: true },
+        { name: 'user_paises_visitados_uq_user_id_pais_id', fields: ['user_id', 'pais_id'], unique: true },
       ]
     });
   },

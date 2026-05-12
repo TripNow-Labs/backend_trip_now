@@ -122,10 +122,10 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_parceiro_id', fields: ['parceiro_id'] },
-        { name: 'idx_cidade_id', fields: ['cidade_id'] },
-        { name: 'idx_status', fields: ['status'] },
-        { name: 'idx_valido_ate', fields: ['valido_ate'] },
+        { name: 'cupons_idx_parceiro_id', fields: ['parceiro_id'] },
+        { name: 'cupons_idx_cidade_id', fields: ['cidade_id'] },
+        { name: 'cupons_idx_status', fields: ['status'] },
+        { name: 'cupons_idx_valido_ate', fields: ['valido_ate'] },
       ]
     });
   },

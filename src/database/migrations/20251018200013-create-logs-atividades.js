@@ -30,7 +30,7 @@ module.exports = {
         type: Sequelize.TEXT,
       },
       metadados: {
-        type: Sequelize.JSON,
+        type: Sequelize.JSONB,
       },
       endereco_ip: {
         type: Sequelize.STRING(45),
@@ -45,9 +45,9 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_user_id', fields: ['user_id'] },
-        { name: 'idx_tipo_acao', fields: ['tipo_acao'] },
-        { name: 'idx_criado_em', fields: ['criado_em'] },
+        { name: 'logs_atividades_idx_user_id', fields: ['user_id'] },
+        { name: 'logs_atividades_idx_tipo_acao', fields: ['tipo_acao'] },
+        { name: 'logs_atividades_idx_criado_em', fields: ['criado_em'] },
       ]
     });
   },

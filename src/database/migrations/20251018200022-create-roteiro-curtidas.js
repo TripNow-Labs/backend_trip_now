@@ -33,9 +33,8 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_roteiro_id', fields: ['roteiro_id'] },
-        { name: 'idx_user_id', fields: ['user_id'] },
-        { name: 'uq_roteiro_curtida', fields: ['roteiro_id', 'user_id'], unique: true },
+        { name: 'roteiro_curtidas_idx_user_id', fields: ['user_id'] },
+        { name: 'roteiro_curtidas_uq_roteiro_id_user_id', fields: ['roteiro_id', 'user_id'], unique: true },
       ]
     });
   },

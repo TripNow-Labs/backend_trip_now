@@ -26,7 +26,7 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_continente', fields: ['continente'] },
+        { name: 'paises_idx_continente', fields: ['continente'] },
       ]
     });
   },

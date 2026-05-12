@@ -28,8 +28,7 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_roteiro_id', fields: ['roteiro_id'] },
-        { name: 'uq_roteiro_tag', fields: ['roteiro_id', 'tag'], unique: true },
+        { name: 'roteiro_tags_uq_roteiro_id_tag', fields: ['roteiro_id', 'tag'], unique: true },
       ]
     });
   },

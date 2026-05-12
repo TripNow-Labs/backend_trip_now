@@ -34,7 +34,7 @@ module.exports = {
         type: Sequelize.DATEONLY,
       },
       filtros: {
-        type: Sequelize.JSON,
+        type: Sequelize.JSONB,
       },
       url_arquivo: {
         type: Sequelize.TEXT,
@@ -53,9 +53,9 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_gerado_por', fields: ['gerado_por'] },
-        { name: 'idx_tipo_relatorio', fields: ['tipo_relatorio'] },
-        { name: 'idx_criado_em', fields: ['criado_em'] },
+        { name: 'relatorios_idx_gerado_por', fields: ['gerado_por'] },
+        { name: 'relatorios_idx_tipo_relatorio', fields: ['tipo_relatorio'] },
+        { name: 'relatorios_idx_criado_em', fields: ['criado_em'] },
       ]
     });
   },

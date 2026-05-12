@@ -43,7 +43,11 @@ class Database {
     }
 
     init() {
-        this.connection = new Sequelize(databaseConfig);
+        //this.connection = new Sequelize(databaseConfig);
+        this.connection = new Sequelize({
+            ...databaseConfig,
+            logging: console.log, // Habilita o log de queries no terminal para análise de performance
+        });
 
 
         models

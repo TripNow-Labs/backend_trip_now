@@ -10,7 +10,7 @@ class LogsAtividades extends Model {
       tipo_entidade: Sequelize.STRING,
       entidade_id: Sequelize.INTEGER,
       descricao: Sequelize.TEXT,
-      metadados: Sequelize.JSON,
+      metadados: Sequelize.JSONB,
       endereco_ip: Sequelize.STRING,
       user_agent: Sequelize.TEXT,
     }, {

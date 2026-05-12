@@ -67,8 +67,8 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_cidade_id', fields: ['cidade_id'] },
-        { name: 'idx_categoria', fields: ['categoria'] },
+        { name: 'atracoes_turisticas_idx_cidade_id', fields: ['cidade_id'] },
+        { name: 'atracoes_turisticas_idx_categoria', fields: ['categoria'] },
       ]
     });
   },

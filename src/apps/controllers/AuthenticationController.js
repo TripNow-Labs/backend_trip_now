@@ -63,9 +63,7 @@ class AuthenticationController {
 
     // Retornamos também na string JSON para clientes estritamente WebSockets ou Mobile Antigo.
     return res.status(200).json({ 
-        user: { id, user_name: userName }, 
-        token,
-        refreshToken 
+        user: { id, user_name: userName }
     });
   }
 

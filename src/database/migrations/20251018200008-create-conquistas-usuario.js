@@ -32,8 +32,7 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_user_id', fields: ['user_id'] },
-        { name: 'uq_user_conquista', fields: ['user_id', 'conquista_id'], unique: true },
+        { name: 'conquistas_usuario_uq_user_id_conquista_id', fields: ['user_id', 'conquista_id'], unique: true },
       ]
     });
   },
