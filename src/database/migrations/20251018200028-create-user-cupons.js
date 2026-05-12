@@ -40,9 +40,8 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_user_id', fields: ['user_id'] },
-        { name: 'idx_cupom_id', fields: ['cupom_id'] },
-        { name: 'uq_user_cupom', fields: ['user_id', 'cupom_id'], unique: true },
+        { name: 'user_cupons_idx_cupom_id', fields: ['cupom_id'] },
+        { name: 'user_cupons_uq_user_id_cupom_id', fields: ['user_id', 'cupom_id'], unique: true },
       ]
     });
   },

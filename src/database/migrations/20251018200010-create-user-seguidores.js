@@ -33,9 +33,8 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_seguidor_id', fields: ['seguidor_id'] },
-        { name: 'idx_seguido_id', fields: ['seguido_id'] },
-        { name: 'uq_seguidor', fields: ['seguidor_id', 'seguido_id'], unique: true },
+        { name: 'user_seguidores_idx_seguido_id', fields: ['seguido_id'] },
+        { name: 'user_seguidores_uq_seguidor_id_seguido_id', fields: ['seguidor_id', 'seguido_id'], unique: true },
       ]
     });
     // O CHECK constraint (seguidor_id != seguido_id) precisa ser adicionado com SQL puro

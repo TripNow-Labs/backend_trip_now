@@ -31,7 +31,7 @@ class UserController {
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       
       // Salva na memória
-      verificationCodes.set(email, code);
+      verificationCodes.set(email, { code, expiresAt: Date.now() + 10 * 60 * 1000 });
 
       // Envia E-mail
       const emailSent = await sendVerificationEmail(email, code);
@@ -43,7 +43,7 @@ class UserController {
 
     } catch (error) {
       console.error('Erro no cadastro:', error);
-      return res.status(500).json({ message: 'Erro ao criar usuário.', error: error.message });
+      return res.status(500).json({ message: 'Erro ao criar usuário.' });
     }
   }
 
@@ -52,9 +52,9 @@ class UserController {
     const { email, code } = req.body;
 
     try {
-      const storedCode = verificationCodes.get(email);
+      const storedData = verificationCodes.get(email);
 
-      if (!storedCode || storedCode !== code) {
+      if (!storedData || storedData.code !== code || Date.now() > storedData.expiresAt) {
         return res.status(400).json({ message: 'Código inválido ou expirado.' });
       }
 
@@ -93,7 +93,7 @@ class UserController {
       });
       return res.status(201).send({ message: 'User created' });
     } catch (error) {
-      return res.status(500).json({ message: 'Erro ao criar usuário.', error: error.message });
+      return res.status(500).json({ message: 'Erro ao criar usuário.' });
     }
   }
 
@@ -135,7 +135,7 @@ class UserController {
 
     } catch (error) {
       console.error('Erro ao buscar perfil:', error);
-      return res.status(500).json({ message: 'Falha ao buscar perfil.', details: error.message });
+      return res.status(500).json({ message: 'Falha ao buscar perfil.' });
     }
   }
 
@@ -143,6 +143,11 @@ class UserController {
   async updateUser(req, res) {
     try {
       const { id } = req.params; 
+
+      if (parseInt(id) !== req.userId && req.tipoUsuario !== 'admin') {
+        return res.status(403).json({ error: 'Sem permissão para modificar este usuário.' });
+      }
+
       // Recebe todos os campos possíveis
       const { 
         user_name, email, password, name, 
@@ -173,7 +178,7 @@ class UserController {
 
       return res.status(200).json({ message: 'Usuário atualizado com sucesso!' });
     } catch (err) {
-      return res.status(500).json({ error: `Erro ao atualizar: ${err.message}` });
+      return res.status(500).json({ error: 'Erro ao atualizar usuário.' });
     }
   }
 
@@ -206,10 +211,7 @@ class UserController {
 
     } catch (error) {
       console.error('Erro ao atualizar foto:', error);
-      return res.status(500).json({ 
-        message: 'Falha ao processar upload da imagem.', 
-        details: error.message 
-      });
+      return res.status(500).json({ message: 'Falha ao processar upload da imagem.' });
     }
   }
 
@@ -217,13 +219,18 @@ class UserController {
   async deleteUser(req, res) {
     try {
       const { id } = req.params;
+
+      if (parseInt(id) !== req.userId && req.tipoUsuario !== 'admin') {
+        return res.status(403).json({ error: 'Sem permissão para deletar este usuário.' });
+      }
+
       const user = await Users.findByPk(id);
       if (!user) return res.status(404).json({ error: 'Usuário não encontrado!' });
       
       await user.destroy();
       return res.status(200).json({ message: 'Usuário deletado com sucesso!' });
     } catch (err) {
-      return res.status(500).json({ error: 'Erro ao deletar usuário: ' + err.message });
+      return res.status(500).json({ error: 'Erro ao deletar usuário.' });
     }
   }
 

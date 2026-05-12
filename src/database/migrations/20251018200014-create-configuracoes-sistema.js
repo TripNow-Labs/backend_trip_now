@@ -50,7 +50,7 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_categoria', fields: ['categoria'] },
+        { name: 'configuracoes_sistema_idx_categoria', fields: ['categoria'] },
       ]
     });
   },

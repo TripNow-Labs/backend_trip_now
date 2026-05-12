@@ -81,7 +81,7 @@ class AtracaoSugestaoController {
 
     } catch (error) {
       console.error('Erro ao buscar sugestões de atrações:', error);
-      return res.status(500).json({ message: 'Falha ao buscar sugestões.', details: error.message });
+      return res.status(500).json({ message: 'Falha ao buscar sugestões.' });
     }
   }
 }

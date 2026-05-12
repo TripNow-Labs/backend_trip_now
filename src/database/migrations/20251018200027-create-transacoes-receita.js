@@ -67,7 +67,7 @@ module.exports = {
         type: Sequelize.TEXT,
       },
       metadados: {
-        type: Sequelize.JSON,
+        type: Sequelize.JSONB,
       },
       criado_em: {
         type: Sequelize.DATE,
@@ -76,13 +76,14 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_parceiro_id', fields: ['parceiro_id'] },
-        { name: 'idx_status', fields: ['status'] },
-        { name: 'idx_criado_em', fields: ['criado_em'] },
+        { name: 'transacoes_receita_idx_parceiro_id', fields: ['parceiro_id'] },
+        { name: 'transacoes_receita_idx_status', fields: ['status'] },
+        { name: 'transacoes_receita_idx_criado_em', fields: ['criado_em'] },
       ]
     });
   },
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('transacoes_receita');
+    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_transacoes_receita_status";');
   },
 };

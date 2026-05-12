@@ -4,16 +4,15 @@ const { Model, Sequelize } = require('sequelize');
 class Assinatura extends Model {
   static init(sequelize) {
     super.init({
-      id_assinatura: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-        allowNull: false
-      },
-      plano: Sequelize.STRING,
+      user_id: Sequelize.INTEGER,
+      plano: Sequelize.ENUM('mensal', 'trimestral', 'anual'),
+      valor: Sequelize.DECIMAL(10, 2),
+      moeda: Sequelize.STRING,
+      status: Sequelize.ENUM('ativa', 'cancelada', 'inadimplente', 'expirada'),
       data_inicio: Sequelize.DATE,
       data_fim: Sequelize.DATE,
-      status: Sequelize.STRING,
+      renovacao_automatica: Sequelize.BOOLEAN,
+      metodo_pagamento: Sequelize.STRING,
     }, {
       sequelize,
       modelName: 'Assinatura', 
@@ -26,7 +25,7 @@ class Assinatura extends Model {
   }
 
   static associate(models) {
-    this.hasOne(models.Users, { foreignKey: 'id_assinatura' });
+    this.belongsTo(models.Users, { foreignKey: 'user_id', as: 'usuario' });
   }
 }
 

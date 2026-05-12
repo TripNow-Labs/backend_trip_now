@@ -50,8 +50,8 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_roteiro_id', fields: ['roteiro_id'] },
-        { name: 'idx_user_id', fields: ['user_id'] },
+        { name: 'roteiro_comentarios_idx_roteiro_id', fields: ['roteiro_id'] },
+        { name: 'roteiro_comentarios_idx_user_id', fields: ['user_id'] },
       ]
     });
   },

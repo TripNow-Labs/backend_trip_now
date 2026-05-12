@@ -42,8 +42,8 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_user_id', fields: ['user_id'] },
-        { name: 'idx_foi_lida', fields: ['foi_lida'] },
+        { name: 'notificacoes_idx_user_id', fields: ['user_id'] },
+        { name: 'notificacoes_idx_foi_lida', fields: ['foi_lida'] },
       ]
     });
   },

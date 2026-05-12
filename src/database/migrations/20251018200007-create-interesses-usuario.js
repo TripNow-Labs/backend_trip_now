@@ -28,8 +28,7 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_user_id', fields: ['user_id'] },
-        { name: 'uq_user_interesse', fields: ['user_id', 'tipo_interesse'], unique: true },
+        { name: 'interesses_usuario_uq_user_id_tipo_interesse', fields: ['user_id', 'tipo_interesse'], unique: true },
       ]
     });
   },

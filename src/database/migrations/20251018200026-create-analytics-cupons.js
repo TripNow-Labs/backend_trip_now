@@ -47,9 +47,8 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_coupon_id', fields: ['cupom_id'] },
-        { name: 'idx_date', fields: ['data'] },
-        { name: 'uq_cupom_data', fields: ['cupom_id', 'data'], unique: true },
+        { name: 'analytics_cupons_idx_data', fields: ['data'] },
+        { name: 'analytics_cupons_uq_cupom_id_data', fields: ['cupom_id', 'data'], unique: true },
       ]
     });
   },

@@ -11,7 +11,7 @@ class Relatorios extends Model {
       descricao: Sequelize.TEXT,
       inicio_periodo: Sequelize.DATEONLY,
       fim_periodo: Sequelize.DATEONLY,
-      filtros: Sequelize.JSON,
+      filtros: Sequelize.JSONB,
       url_arquivo: Sequelize.TEXT,
       formato_arquivo: Sequelize.STRING,
       status: Sequelize.ENUM('pendente', 'processando', 'concluido', 'falhou'),

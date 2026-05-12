@@ -46,8 +46,7 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_roteiro_id', fields: ['roteiro_id'] },
-        { name: 'uq_roteiro_atracao', fields: ['roteiro_id', 'atracao_id'], unique: true },
+        { name: 'roteiro_atracoes_uq_roteiro_id_atracao_id', fields: ['roteiro_id', 'atracao_id'], unique: true },
       ]
     });
   },

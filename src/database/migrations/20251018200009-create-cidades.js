@@ -54,8 +54,8 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_pais_id', fields: ['pais_id'] },
-        { name: 'idx_tipo', fields: ['tipo'] },
+        { name: 'cidades_idx_pais_id', fields: ['pais_id'] },
+        { name: 'cidades_idx_tipo', fields: ['tipo'] },
       ]
     });
   },
