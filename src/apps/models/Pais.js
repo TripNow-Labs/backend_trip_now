@@ -7,7 +7,7 @@ class Pais extends Model {
       nome: Sequelize.STRING,
       continente: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: false
       },
       moeda: Sequelize.STRING,
     }, {

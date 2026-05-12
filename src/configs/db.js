@@ -12,5 +12,14 @@ module.exports = {
         timestamps: true,
         underscored: true,
         underscoredAll: true
-    }
+    },
+
+     // Adicione isso temporariamente para capturar o SQL:
+  logging: (sql, timing) => {
+    console.log('=== SQL QUERY ===');
+    console.log(sql);
+    console.log(`Tempo: ${timing}ms`);
+    console.log('=================');
+  },
+  benchmark: true  // mostra o tempo de execução de cada query
 }

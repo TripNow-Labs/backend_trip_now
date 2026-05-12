@@ -94,8 +94,8 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_status', fields: ['status'] },
-        { name: 'idx_categoria', fields: ['categoria'] },
+        { name: 'parceiros_idx_status', fields: ['status'] },
+        { name: 'parceiros_idx_categoria', fields: ['categoria'] },
       ]
     });
   },

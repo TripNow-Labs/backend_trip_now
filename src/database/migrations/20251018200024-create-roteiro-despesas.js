@@ -46,7 +46,7 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_roteiro_id', fields: ['roteiro_id'] },
+        { name: 'roteiro_despesas_idx_roteiro_id', fields: ['roteiro_id'] },
       ]
     });
   },

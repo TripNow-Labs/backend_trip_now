@@ -53,7 +53,7 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_user_id', fields: ['user_id'] },
+        { name: 'preferencias_usuario_idx_user_id', fields: ['user_id'] },
       ]
     });
   },

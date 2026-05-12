@@ -20,7 +20,7 @@ class TransacoesReceita extends Model {
       status: Sequelize.ENUM('pendente', 'concluida', 'falhou', 'reembolsada'), // Simplificado
       data_pagamento: Sequelize.DATEONLY, // Simplificado
       descricao: Sequelize.TEXT, // Simplificado
-      metadados: Sequelize.JSON, // Simplificado
+      metadados: Sequelize.JSONB, // Simplificado
     }, {
       sequelize,
       modelName: 'TransacoesReceita',

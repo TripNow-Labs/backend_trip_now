@@ -26,10 +26,6 @@ module.exports = {
         type: Sequelize.STRING(255),
         allowNull: false
       },
-      id_assinatura: {
-        type: Sequelize.INTEGER,
-        allowNull: true
-      },
       tipo_usuario: {
         type: Sequelize.ENUM('usuario', 'admin'),
         allowNull: false,
@@ -73,6 +69,10 @@ module.exports = {
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
         allowNull: false
       }
+    }, {
+      indexes: [
+        { name: 'users_idx_tipo_usuario', fields: ['tipo_usuario'] }
+      ]
     });
   },
 

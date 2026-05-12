@@ -10,7 +10,6 @@ class Users extends Model {
                 password: Sequelize.VIRTUAL,
                 user_name: Sequelize.STRING,
                 name: Sequelize.STRING,
-                id_assinatura: Sequelize.INTEGER,
                 tipo_usuario: Sequelize.ENUM('usuario', 'admin'),
                 telefone: Sequelize.STRING,
                 data_nascimento: Sequelize.DATEONLY, // Ideal para datas sem fuso/hora no Postgres
@@ -45,11 +44,11 @@ class Users extends Model {
     static associate(models) {
         // 1:1
         this.hasOne(models.PreferenciasUsuario, { foreignKey: 'user_id', as: 'preferencias' });
-        this.belongsTo(models.Assinatura, { foreignKey: 'id_assinatura', as: 'assinatura' });
 
         // 1:N
         this.hasMany(models.InteressesUsuario, { foreignKey: 'user_id', as: 'interesses' });
         this.hasMany(models.ConquistasUsuario, { foreignKey: 'user_id', as: 'conquistasUsuario' });
+        this.hasMany(models.Assinatura, { foreignKey: 'user_id', as: 'historicoAssinaturas' });
         this.hasMany(models.Roteiro, { foreignKey: 'user_id', as: 'roteiros' });
         this.hasMany(models.RoteiroCurtida, { foreignKey: 'user_id', as: 'curtidasDadas' });
         this.hasMany(models.RoteiroComentarios, { foreignKey: 'user_id', as: 'comentarios' });

@@ -2,9 +2,9 @@ const crypto = require('crypto');
 
 const algorithm = 'aes-256-ctr';
 const secretKey = process.env.SECRET_CRYPTO;
-const iv = crypto.randomBytes(16);
 
 const encrypt = (text) => {
+  const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv(algorithm, secretKey, iv);
 
   const encrypted = Buffer.concat([cipher.update(text.toString()), cipher.final()]);

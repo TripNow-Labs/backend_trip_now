@@ -103,11 +103,10 @@ module.exports = {
       },
     }, {
       indexes: [
-        { name: 'idx_user_id', fields: ['user_id'] },
-        { name: 'idx_cidade_id', fields: ['cidade_id'] },
-        { name: 'idx_status', fields: ['status'] },
-        { name: 'idx_e_publico', fields: ['e_publico'] },
-        { name: 'idx_criado_em', fields: ['criado_em'] },
+        { name: 'roteiros_idx_cidade_id', fields: ['cidade_id'] },
+        { name: 'roteiros_idx_status', fields: ['status'] },
+        { name: 'roteiros_idx_e_publico', fields: ['e_publico'] },
+        { name: 'roteiros_idx_criado_em', fields: ['criado_em'] },
       ]
     });
   },
