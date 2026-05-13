@@ -2,6 +2,7 @@ const db = require('../../database');
 const RoteiroAtracao = require('../models/RoteiroAtracao'); 
 const Roteiro = require('../models/Roteiro');
 const AtracoesTuristicas = require('../models/AtracaoTuristica');
+const LogsAtividades = require('../models/LogsAtividades');
 
 class RoteiroAtracaoController {
 
@@ -147,6 +148,69 @@ class RoteiroAtracaoController {
     } catch (error) {
       console.error('Erro ao deletar:', error);
       return res.status(500).json({ message: 'Falha ao deletar.', details: error.message });
+    }
+  }
+  /**
+   * Faz o upload de uma foto para uma atividade específica e registra no log.
+   */
+  async uploadFoto(req, res) {
+    try {
+      const { id } = req.params; // ID da RoteiroAtracao (atividade)
+      const { userId } = req;
+
+      // 1. Validar se o arquivo foi processado pelo Multer/Cloudinary
+      if (!req.file) {
+        return res.status(400).json({ message: 'Nenhuma imagem foi enviada.' });
+      }
+
+      // 2. Localizar a atividade e verificar se o roteiro pertence ao usuário logado
+      const atividade = await RoteiroAtracao.findOne({
+        where: { id },
+        include: [{
+          model: Roteiro,
+          as: 'roteiro',
+          attributes: ['user_id']
+        }]
+      });
+
+      if (!atividade) {
+        return res.status(404).json({ message: 'Atividade não encontrada.' });
+      }
+
+      if (atividade.roteiro.user_id !== userId) {
+        return res.status(403).json({ message: 'Você não tem permissão para alterar este roteiro.' });
+      }
+
+      const imageUrl = req.file.path; // URL gerada pelo Cloudinary
+
+      // 3. Atualizar o banco de dados (Adicionando ao ARRAY do Postgres)
+      // Usamos array_append para manter as fotos anteriores
+      await atividade.update({
+        fotos: db.connection.fn('array_append', db.connection.col('fotos'), imageUrl)
+      });
+
+      // 4. Registrar a ação no LogsAtividades
+      await LogsAtividades.create({
+        user_id: userId,
+        tipo_acao: 'UPLOAD_FOTO',
+        tipo_entidade: 'ROTEIRO_ATRACAO',
+        entidade_id: id,
+        descricao: `Usuário adicionou uma nova foto ao passeio no roteiro.`,
+        endereco_ip: req.ip,
+        user_agent: req.headers['user-agent']
+      });
+
+      return res.status(200).json({
+        message: 'Foto adicionada com sucesso!',
+        url: imageUrl
+      });
+
+    } catch (error) {
+      console.error('Erro ao fazer upload de foto:', error);
+      return res.status(500).json({ 
+        message: 'Falha ao processar upload.', 
+        details: error.message 
+      });
     }
   }
 }
